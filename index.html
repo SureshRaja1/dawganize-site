@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DAWganize — DAW Session Organizer for Mac</title>
+<meta name="description" content="DAWganize organizes your Pro Tools, Ableton Live, and Logic Pro sessions automatically. AI track grouping, I/O routing, stem import — all in one native macOS app."/>
+<meta property="og:title" content="DAWganize — DAW Session Organizer for Mac"/>
+<meta property="og:description" content="AI track grouping, I/O routing, and stem import for Pro Tools, Ableton Live, and Logic Pro. One native macOS app."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://www.dawganize.com"/>
+<meta property="og:image" content="https://www.dawganize.com/og-image.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link rel="icon" type="image/png" href="favicon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0a0a0b;
+    --surface:   #111114;
+    --surface2:  #18181c;
+    --border:    rgba(255,255,255,0.08);
+    --text:      #f0f0f0;
+    --muted:     #888;
+    --accent:    #ff7a2f;
+    --accent2:   #ffb347;
+    --radius:    12px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 60px;
+    background: rgba(10,10,11,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 1.1rem; font-weight: 700; color: var(--text);
+    text-decoration: none; letter-spacing: -0.02em;
+  }
+  .nav-logo-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-logo-icon img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .nav-badge {
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 4px;
+    padding: 3px 8px; opacity: 0.85;
+  }
+  .nav-links { display: flex; align-items: center; gap: 32px; }
+  .nav-links a {
+    font-size: 0.85rem; font-weight: 500; color: var(--muted);
+    text-decoration: none; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    padding: 9px 22px;
+    background: var(--accent); color: #fff;
+    border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+    text-decoration: none; transition: opacity 0.2s;
+  }
+  .nav-cta:hover { opacity: 0.85; color: #fff; }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 140px 40px 100px;
+    position: relative; overflow: hidden;
+  }
+  .hero-glow {
+    position: absolute; top: 20%; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 400px; border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(255,122,47,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--accent);
+    border: 1px solid rgba(255,122,47,0.3);
+    border-radius: 20px; padding: 6px 16px; margin-bottom: 28px;
+  }
+  .hero-eyebrow-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+  h1 {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 700; letter-spacing: -0.04em;
+    line-height: 1.0; margin-bottom: 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #aaaaaa 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  h1 span {
+    background: linear-gradient(135deg, #ff8c3f, #ffb347);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 1.15rem; font-weight: 300; color: var(--muted);
+    max-width: 520px; margin: 0 auto 40px; line-height: 1.7;
+  }
+  .hero-actions {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 60px;
+  }
+  .btn-primary {
+    padding: 14px 32px; background: var(--accent); color: #fff;
+    border-radius: 10px; font-size: 0.9rem; font-weight: 600;
+    text-decoration: none; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover { background: #e06a22; transform: translateY(-1px); }
+  .btn-secondary {
+    padding: 14px 32px; background: transparent; color: var(--text);
+    border: 1px solid var(--border); border-radius: 10px;
+    font-size: 0.9rem; font-weight: 500;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: rgba(255,255,255,0.25); }
+
+  /* DAW support badges */
+  .daw-support {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center;
+  }
+  .daw-label { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.05em; }
+  .daw-badge {
+    padding: 6px 14px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.8rem; font-weight: 500; color: #ccc;
+  }
+
+  /* ── SCREENSHOT HERO ── */
+  .screenshot-hero {
+    max-width: 1000px; margin: 80px auto 0;
+    padding: 0 40px;
+  }
+  .screenshot-window {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+  }
+  .window-bar {
+    background: #1c1c1e; padding: 12px 16px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .window-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .window-dot.red { background: #ff5f57; }
+  .window-dot.yellow { background: #ffbd2e; }
+  .window-dot.green { background: #28c840; }
+  .window-title {
+    flex: 1; text-align: center;
+    font-size: 0.8rem; color: var(--muted);
+  }
+  .window-screen { width: 100%; display: block; }
+  .window-screen img { width: 100%; display: block; }
+  .screenshot-placeholder {
+    width: 100%; aspect-ratio: 16/9;
+    background: linear-gradient(135deg, #141414, #1a1a1e);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+  }
+  .placeholder-tracks {
+    display: flex; flex-direction: column; gap: 8px; width: 70%;
+  }
+  .placeholder-track {
+    height: 36px; border-radius: 4px; display: flex; align-items: center;
+    padding: 0 12px; gap: 10px; font-size: 0.75rem; font-weight: 500;
+  }
+  .t-drums  { background: rgba(232,112,58,0.2); border: 1px solid rgba(232,112,58,0.4); color: #e8703a; }
+  .t-bass   { background: rgba(58,123,232,0.2); border: 1px solid rgba(58,123,232,0.4); color: #3a7be8; }
+  .t-harm   { background: rgba(46,204,138,0.2); border: 1px solid rgba(46,204,138,0.4); color: #2ecc8a; }
+  .t-mel    { background: rgba(155,89,232,0.2); border: 1px solid rgba(155,89,232,0.4); color: #9b59e8; }
+  .t-vox    { background: rgba(255,122,47,0.2);  border: 1px solid rgba(255,122,47,0.4);  color: #ff7a2f; }
+  .track-bar { flex: 1; height: 8px; border-radius: 4px; opacity: 0.5; }
+  .t-drums .track-bar  { background: #e8703a; }
+  .t-bass .track-bar   { background: #3a7be8; width: 75%; }
+  .t-harm .track-bar   { background: #2ecc8a; width: 90%; }
+  .t-mel .track-bar    { background: #9b59e8; width: 60%; }
+  .t-vox .track-bar    { background: #ff7a2f; width: 80%; }
+
+  /* ── SECTIONS ── */
+  section { padding: 100px 60px; max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700; letter-spacing: -0.03em;
+    line-height: 1.15; margin-bottom: 16px;
+  }
+  .section-sub {
+    font-size: 1rem; color: var(--muted); font-weight: 300;
+    max-width: 520px; line-height: 1.7; margin-bottom: 60px;
+  }
+  .accent-line {
+    width: 48px; height: 3px; background: var(--accent);
+    border-radius: 2px; margin-bottom: 40px;
+  }
+
+  /* ── HOW IT WORKS ── */
+  #how { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); max-width: 100%; }
+  #how .inner { max-width: 1100px; margin: 0 auto; padding: 100px 60px; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+  .step {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .step-num {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,122,47,0.12); border: 1px solid rgba(255,122,47,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; font-weight: 700; color: var(--accent);
+  }
+  .step-title { font-size: 1.05rem; font-weight: 600; }
+  .step-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+
+  /* ── FEATURES ── */
+  .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px;
+    transition: border-color 0.2s;
+  }
+  .feature-card:hover { border-color: rgba(255,122,47,0.3); }
+  .feature-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: rgba(255,122,47,0.1); border: 1px solid rgba(255,122,47,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 16px;
+  }
+  .feature-title { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+  .feature-desc { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+
+  /* ── SCREENSHOTS ── */
+  #screenshots { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); max-width: 100%; }
+  #screenshots .inner { max-width: 1100px; margin: 0 auto; padding: 100px 60px; }
+  @media (max-width: 768px) { #screenshots .inner { padding: 60px 24px; } }
+  .screenshots-tabs {
+    display: flex; gap: 4px; margin-bottom: 40px;
+    background: var(--surface2); border-radius: 10px;
+    padding: 4px; width: fit-content;
+  }
+  .tab-btn {
+    padding: 8px 20px; border-radius: 7px; border: none; cursor: pointer;
+    font-size: 0.82rem; font-weight: 500; font-family: 'Inter', sans-serif;
+    background: transparent; color: var(--muted); transition: all 0.2s;
+  }
+  .tab-btn.active { background: var(--surface); color: var(--text); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .screenshot-frame {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .screenshot-frame img { width: 100%; display: block; }
+  .screenshot-caption {
+    padding: 16px 20px; font-size: 0.85rem; color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── DAWS SECTION ── */
+  .daws-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .daw-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px;
+    display: flex; flex-direction: column; gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .daw-card:hover { border-color: rgba(255,122,47,0.3); }
+  .daw-card-icon { font-size: 2rem; }
+  .daw-card-name { font-size: 1rem; font-weight: 600; }
+  .daw-card-format {
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em;
+    color: var(--accent); text-transform: uppercase;
+  }
+  .daw-card-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+  .daw-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; font-weight: 500; color: #4ade80;
+  }
+  .daw-status.soon { color: var(--muted); }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ── PRICING ── */
+  #pricing { text-align: center; }
+  .price-card {
+    max-width: 420px; margin: 0 auto;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 48px; position: relative; overflow: hidden;
+  }
+  .price-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #ff7a2f, #ffb347);
+  }
+  .price-amount {
+    font-size: 4rem; font-weight: 700; letter-spacing: -0.04em;
+    color: var(--text); margin: 16px 0 4px;
+  }
+  .price-period { font-size: 0.9rem; color: var(--muted); margin-bottom: 32px; }
+  .price-features { list-style: none; text-align: left; margin-bottom: 36px; display: flex; flex-direction: column; gap: 12px; }
+  .price-features li {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 0.9rem; color: #ccc;
+  }
+  .price-features li::before {
+    content: '✓'; color: var(--accent); font-weight: 700; font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .price-note { font-size: 0.78rem; color: var(--muted); margin-top: 16px; }
+
+  /* ── WAITLIST ── */
+  #waitlist {
+    background: linear-gradient(135deg, rgba(255,122,47,0.06), transparent);
+    border-top: 1px solid var(--border); max-width: 100%;
+  }
+  #waitlist .inner {
+    max-width: 600px; margin: 0 auto; padding: 100px 60px;
+    text-align: center;
+  }
+  .waitlist-form { display: flex; gap: 12px; margin-top: 32px; }
+  .waitlist-input {
+    flex: 1; padding: 14px 18px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 0.9rem;
+    outline: none; transition: border-color 0.2s;
+  }
+  .waitlist-input:focus { border-color: var(--accent); }
+  .waitlist-input::placeholder { color: var(--muted); }
+  .waitlist-note { font-size: 0.78rem; color: var(--muted); margin-top: 12px; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 48px 60px; display: flex;
+    align-items: center; justify-content: space-between;
+  }
+  .footer-left { display: flex; flex-direction: column; gap: 6px; }
+  .footer-brand { font-size: 0.95rem; font-weight: 600; }
+  .footer-copy { font-size: 0.78rem; color: var(--muted); }
+  .footer-link { font-size: 0.82rem; color: var(--muted); text-decoration: none; }
+  .footer-link:hover { color: var(--text); }
+
+  /* ── HAMBURGER ── */
+  .hamburger {
+    display: none; background: none; border: none; cursor: pointer;
+    padding: 4px; flex-direction: column; gap: 5px;
+  }
+  .hamburger span {
+    display: block; width: 22px; height: 2px;
+    background: var(--text); border-radius: 2px; transition: all 0.2s;
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    .hamburger { display: flex; }
+    .nav-links {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      background: rgba(10,10,11,0.97); border-bottom: 1px solid var(--border);
+      flex-direction: column; padding: 20px 24px; gap: 20px;
+    }
+    nav.open .nav-links { display: flex; }
+    .nav-badge { display: none; }
+    section { padding: 60px 24px; }
+    .steps { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .daws-grid { grid-template-columns: 1fr; }
+    .waitlist-form { flex-direction: column; }
+    footer { flex-direction: column; gap: 20px; text-align: center; }
+    #how .inner, #screenshots .inner, #waitlist .inner { padding: 60px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon"><img src="favicon.png" alt="DAWganize icon"></div>
+    DAWganize
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#screenshots">Screenshots</a>
+    <a href="#daws">DAW Support</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <span class="nav-badge">Coming Soon</span>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-eyebrow">
+    <span class="hero-eyebrow-dot"></span>
+    Mac App Store · Coming Soon
+  </div>
+  <h1>Organize your <span>DAW sessions</span> in seconds</h1>
+  <p class="hero-sub">DAWganize automatically groups, routes, and organizes tracks in Pro Tools, Ableton Live, and Logic Pro — so you can focus on the music.</p>
+  <div class="hero-actions">
+    <a href="#waitlist" class="btn-primary">
+      Get Early Access
+      <span>→</span>
+    </a>
+    <a href="#screenshots" class="btn-secondary">See it in action</a>
+  </div>
+  <div class="daw-support">
+    <span class="daw-label">Works with</span>
+    <span class="daw-badge">Pro Tools</span>
+    <span class="daw-badge">Ableton Live</span>
+    <span class="daw-badge">Logic Pro</span>
+  </div>
+</section>
+
+<!-- APP PREVIEW -->
+<div style="background: var(--bg); padding: 0 60px 100px; max-width: 1100px; margin: 0 auto;">
+  <div class="screenshot-window">
+    <div class="window-bar">
+      <div class="window-dot red"></div>
+      <div class="window-dot yellow"></div>
+      <div class="window-dot green"></div>
+      <span class="window-title">DAWganize — Import Stems</span>
+    </div>
+    <div class="window-screen">
+      <img src="screenshot-hero.png" alt="DAWganize Import Stems — track grouping view" style="width:100%;display:block;"/>
+    </div>
+  </div>
+</div>
+
+<!-- SCREENSHOTS -->
+<div id="screenshots">
+  <div class="inner">
+    <p class="section-label">Screenshots</p>
+    <h2 class="section-title">See it in action</h2>
+    <div class="accent-line"></div>
+    <div class="screenshots-tabs">
+      <button class="tab-btn active" data-tab="tab-import">Import Stems</button>
+      <button class="tab-btn" data-tab="tab-session">Session Prep</button>
+      <button class="tab-btn" data-tab="tab-export">Export</button>
+      <button class="tab-btn" data-tab="tab-settings">Settings</button>
+    </div>
+
+    <div id="tab-import" class="tab-content active">
+      <div class="screenshot-frame">
+        <div class="window-bar">
+          <div class="window-dot red"></div>
+          <div class="window-dot yellow"></div>
+          <div class="window-dot green"></div>
+          <span class="window-title">DAWganize — Import Stems · Pro Tools</span>
+        </div>
+        <img src="screenshot-import.png" alt="DAWganize Import Stems" style="width:100%;display:block;"/>
+        <div class="screenshot-caption">Import Stems — scan a folder of stems, auto-group by instrument type, assign Pro Tools I/O outputs, and import in one click.</div>
+      </div>
+    </div>
+
+    <div id="tab-session" class="tab-content">
+      <div class="screenshot-frame">
+        <div class="window-bar">
+          <div class="window-dot red"></div>
+          <div class="window-dot yellow"></div>
+          <div class="window-dot green"></div>
+          <span class="window-title">DAWganize — Session Prep · Ableton Live</span>
+        </div>
+        <img src="screenshot-session.png" alt="DAWganize Session Prep" style="width:100%;display:block;"/>
+        <div class="screenshot-caption">Session Prep — set up your Logic Pro template with bus routing and group output routing pre-configured, ready for every session.</div>
+      </div>
+    </div>
+
+    <div id="tab-export" class="tab-content">
+      <div class="screenshot-frame">
+        <div class="window-bar">
+          <div class="window-dot red"></div>
+          <div class="window-dot yellow"></div>
+          <div class="window-dot green"></div>
+          <span class="window-title">DAWganize — Export · Ableton Live</span>
+        </div>
+        <img src="screenshot-export.png" alt="DAWganize Export" style="width:100%;display:block;"/>
+        <div class="screenshot-caption">Export — select tracks, set sample rate, bit depth, and format. Exports MIDI, AAF, and audio files — all from one screen.</div>
+      </div>
+    </div>
+
+    <div id="tab-settings" class="tab-content">
+      <div class="screenshot-frame">
+        <img src="screenshot-settings.png" alt="DAWganize — Pro Tools I/O Routing" style="width:100%;display:block;border-radius:12px 12px 0 0;"/>
+        <div class="screenshot-caption">Settings — map each instrument group to a hardware output pair, save named profiles, and scan available outputs directly from Pro Tools.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div id="how">
+  <div class="inner">
+    <p class="section-label">How it works</p>
+    <h2 class="section-title">Three steps to a clean session</h2>
+    <div class="accent-line"></div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Point to your stems folder</div>
+        <p class="step-desc">Select your stems output folder. DAWganize scans all audio files and detects formats automatically — WAV, AIFF, FLAC.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">AI groups your tracks</div>
+        <p class="step-desc">Drums, Bass, Harmonic, Melody, Vocals — classified automatically. Drag to reassign, or let the AI handle everything.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Import into your DAW</div>
+        <p class="step-desc">One click creates and imports a fully organized session into Pro Tools, Ableton, or Logic Pro — with routing, bus sends, and controller names set.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <p class="section-label">Features</p>
+  <h2 class="section-title">Built for working producers</h2>
+  <div class="accent-line"></div>
+  <p class="section-sub">Every feature was built to solve a real problem in a real session — not a feature list for its own sake.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🧠</div>
+      <div class="feature-title">AI Instrument Recognition</div>
+      <p class="feature-desc">Local FFT spectral analysis classifies tracks by audio content — Drums, Bass, Vocals, Keys and more. Falls back to keyword matching for MIDI tracks. No cloud API, no subscription.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔌</div>
+      <div class="feature-title">Pro Tools I/O Routing</div>
+      <p class="feature-desc">Maps each group to hardware output pairs using the Pro Tools Scripting API. Scans your open Pro Tools session live. Save named profiles and load them instantly on any project.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📂</div>
+      <div class="feature-title">Stem Import Engine</div>
+      <p class="feature-desc">Scans WAV, AIFF, and FLAC stems. Auto-detects mono/stereo. Creates a complete session file with audio tracks, groups, file references, and timeline placement — for all three DAWs.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎚️</div>
+      <div class="feature-title">HUI Controller Names</div>
+      <p class="feature-desc">Condenses track names to 4 characters for HUI and Avid S-Series hardware. Strip Common Prefix, Strip Session Prefix, and Condense Names buttons — one click to a clean console view.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔍</div>
+      <div class="feature-title">Stereo-to-Mono Detection</div>
+      <p class="feature-desc">Detects fake stereo files with identical L/R channels and converts them to mono in one click — cleaner mix bus, half the channel count, zero manual checking.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎨</div>
+      <div class="feature-title">DAW Color Support</div>
+      <p class="feature-desc">Full Ableton 70-color palette written directly into the .als file. Logic Pro auto-rainbow mode triggers 96-color auto-assign and applies group colors to every Track Stack header automatically.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎵</div>
+      <div class="feature-title">Ableton Export Engine</div>
+      <p class="feature-desc">Export MIDI as standard .mid files with polyphonic timing. Audio export with configurable sample rate (48kHz), bit depth (24-bit), format (WAV/AIFF), and per-track mono/stereo override.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <div class="feature-title">Non-Destructive & Private</div>
+      <p class="feature-desc">Your original session files are never overwritten. All AI runs locally — no data leaves your Mac. No cloud API, no account required. Reviewed for security: no command injection, no path traversal, no data exfiltration.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DAW SUPPORT -->
+<div id="daws" style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div style="max-width: 1100px; margin: 0 auto; padding: 100px 60px;">
+    <p class="section-label">DAW Support</p>
+    <h2 class="section-title">One tool. Three DAWs.</h2>
+    <div class="accent-line"></div>
+    <div class="daws-grid">
+      <div class="daw-card">
+        <div class="daw-card-icon">🎹</div>
+        <div class="daw-card-name">Ableton Live</div>
+        <div class="daw-card-format">.ALS · Live 11 & 12</div>
+        <p class="daw-card-desc">Full session prep — reads/writes .als files directly (gzipped XML). AI grouping, 70-color palette, strip silence, stereo-to-mono, auto routing, and MIDI/audio export. Auto-detects Live 11 vs 12 schema.</p>
+        <span style="font-size:0.72rem;color:var(--muted);">Requires: Ableton Live 11.0+ · macOS 12+</span>
+        <span class="daw-status"><span class="status-dot"></span> Coming soon</span>
+      </div>
+      <div class="daw-card">
+        <div class="daw-card-icon">🎧</div>
+        <div class="daw-card-name">Pro Tools</div>
+        <div class="daw-card-format">.AAF · Pro Tools 2023.3+</div>
+        <p class="daw-card-desc">One-click AAF import with automatic dialog handling. I/O output routing via the Pro Tools Scripting API. HUI 4-char controller names. Reverb/Delay bus sends. Scan from open Pro Tools session.</p>
+        <span style="font-size:0.72rem;color:var(--muted);">Requires: Pro Tools 2023.3+ · macOS 12+</span>
+        <span class="daw-status"><span class="status-dot"></span> Coming soon</span>
+      </div>
+      <div class="daw-card">
+        <div class="daw-card-icon">🎼</div>
+        <div class="daw-card-name">Logic Pro</div>
+        <div class="daw-card-format">.LOGICX · Logic 10.7.5+</div>
+        <p class="daw-card-desc">Two import modes: Auto rainbow (96-color batch open) or Colorize yourself (AAF). Creates Summing Track Stacks per group with header colors. Bus sends via embedded Mixer. AppleScript automation.</p>
+        <span style="font-size:0.72rem;color:var(--muted);">Requires: Logic Pro 10.7.5+ · macOS 12+</span>
+        <span class="daw-status"><span class="status-dot"></span> Coming soon</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<section id="pricing">
+  <p class="section-label">Pricing</p>
+  <h2 class="section-title">Simple, honest pricing</h2>
+  <div class="accent-line" style="margin: 0 auto 40px;"></div>
+  <div class="price-card">
+    <p style="font-size:0.85rem; color: var(--muted);">DAWganize for Mac</p>
+    <div class="price-amount">$20</div>
+    <p class="price-period">One-time purchase · No subscription</p>
+    <ul class="price-features">
+      <li>Pro Tools, Ableton Live & Logic Pro support</li>
+      <li>AI stem grouping & I/O routing</li>
+      <li>Unlimited sessions and projects</li>
+      <li>Free updates for 12 months</li>
+      <li>Universal · Intel &amp; Apple Silicon</li>
+      <li>macOS 12 Monterey and later</li>
+    </ul>
+    <a href="#waitlist" class="btn-primary" style="width:100%; justify-content:center; border-radius: 10px;">
+      Get Early Access
+    </a>
+    <p class="price-note">Mac App Store launch coming soon · Early access via direct download</p>
+  </div>
+</section>
+
+<!-- WAITLIST -->
+<div id="waitlist">
+  <div class="inner">
+    <p class="section-label">Early Access</p>
+    <h2 class="section-title">Be first to know</h2>
+    <div class="accent-line" style="margin: 0 auto 20px;"></div>
+    <p style="color: var(--muted); font-size: 0.95rem; line-height: 1.7;">
+      DAWganize is in final development. Drop your email to get notified at launch and receive an early-access discount.
+    </p>
+    <form class="waitlist-form" id="waitlist-form">
+      <input type="hidden" name="access_key" value="dc8b89d0-6bc0-48e8-ab49-a116eccaffb9"/>
+      <input type="hidden" name="subject" value="DAWganize Early Access Signup"/>
+      <input type="checkbox" name="botcheck" style="display:none"/>
+      <input type="email" name="email" placeholder="your@email.com" class="waitlist-input" required/>
+      <button type="submit" class="btn-primary" id="waitlist-btn">Notify Me</button>
+    </form>
+    <p class="waitlist-note" id="waitlist-success" style="display:none; color: #4ade80;">✓ You're on the list! We'll be in touch.</p>
+    <p class="waitlist-note">No spam. Unsubscribe any time.</p>
+  </div>
+</div>
+
+<!-- TECH STRIP -->
+<div style="border-top: 1px solid var(--border); padding: 48px 60px; max-width: 100%;">
+  <div style="max-width:1100px; margin:0 auto; display:flex; flex-wrap:wrap; align-items:center; gap:32px; justify-content:center;">
+    <span style="font-size:0.72rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted)">Built with</span>
+    <span style="font-size:0.82rem;color:#ccc;background:var(--surface2);border:1px solid var(--border);padding:6px 14px;border-radius:6px;">Tauri v2 · Rust</span>
+    <span style="font-size:0.82rem;color:#ccc;background:var(--surface2);border:1px solid var(--border);padding:6px 14px;border-radius:6px;">Python · NumPy · soundfile</span>
+    <span style="font-size:0.82rem;color:#ccc;background:var(--surface2);border:1px solid var(--border);padding:6px 14px;border-radius:6px;">Local FFT · No cloud</span>
+    <span style="font-size:0.82rem;color:#ccc;background:var(--surface2);border:1px solid var(--border);padding:6px 14px;border-radius:6px;">Apple Silicon native</span>
+    <span style="font-size:0.82rem;color:#ccc;background:var(--surface2);border:1px solid var(--border);padding:6px 14px;border-radius:6px;">v0.7.0 · macOS 12 Monterey+</span>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <span class="footer-brand">DAWganize</span>
+    <span class="footer-copy">© 2026 Suresh Raja Musicals LLC · <a href="https://sureshrajaiyer.com" class="footer-link">sureshrajaiyer.com</a></span>
+  </div>
+  <a href="mailto:sriyer1@sureshrajaiyer.com" class="footer-link">Contact</a>
+</footer>
+
+<script>
+  // Mobile hamburger
+  document.getElementById('hamburger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+  // Close nav when a link is clicked on mobile
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => document.querySelector('nav').classList.remove('open'));
+  });
+
+  // Tab switching for screenshots
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById(this.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Waitlist form
+  const waitlistForm = document.getElementById('waitlist-form');
+  if (waitlistForm) {
+    waitlistForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('waitlist-btn');
+      btn.textContent = 'Joining...';
+      btn.disabled = true;
+      const data = Object.fromEntries(new FormData(waitlistForm));
+      try {
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (result.success) {
+          waitlistForm.style.display = 'none';
+          document.getElementById('waitlist-success').style.display = 'block';
+        } else {
+          btn.textContent = 'Notify Me';
+          btn.disabled = false;
+        }
+      } catch(err) {
+        btn.textContent = 'Notify Me';
+        btn.disabled = false;
+      }
+    });
+  }
+</script>
+</body>
+</html>
