@@ -747,13 +747,38 @@
   </div>
 </div>
 
+<!-- CONTACT MODAL -->
+<div id="contact-modal" style="display:none; position:fixed; inset:0; z-index:999; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); align-items:center; justify-content:center;">
+  <div style="background:#111114; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:40px; width:100%; max-width:480px; margin:24px; position:relative;">
+    <button id="contact-close" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#888; font-size:1.2rem; cursor:pointer;">✕</button>
+    <p style="font-size:0.72rem; font-weight:600; letter-spacing:0.2em; text-transform:uppercase; color:#ff7a2f; margin-bottom:12px;">Contact</p>
+    <h3 style="font-size:1.4rem; font-weight:700; letter-spacing:-0.02em; margin-bottom:24px;">Get in touch</h3>
+    <form id="contact-form">
+      <input type="hidden" name="access_key" value="570bad20-69ae-470e-a9f6-d4c9d21e1376"/>
+      <input type="hidden" name="subject" value="DAWganize Contact Form"/>
+      <input type="checkbox" name="botcheck" style="display:none"/>
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <input type="text" name="name" placeholder="Your name" required
+          style="padding:13px 16px; background:#18181c; border:1px solid rgba(255,255,255,0.08); border-radius:10px; color:#f0f0f0; font-family:'Inter',sans-serif; font-size:0.9rem; outline:none;"/>
+        <input type="email" name="email" placeholder="Your email" required
+          style="padding:13px 16px; background:#18181c; border:1px solid rgba(255,255,255,0.08); border-radius:10px; color:#f0f0f0; font-family:'Inter',sans-serif; font-size:0.9rem; outline:none;"/>
+        <textarea name="message" placeholder="Your message" rows="5" required
+          style="padding:13px 16px; background:#18181c; border:1px solid rgba(255,255,255,0.08); border-radius:10px; color:#f0f0f0; font-family:'Inter',sans-serif; font-size:0.9rem; outline:none; resize:vertical;"></textarea>
+        <button type="submit" id="contact-btn"
+          style="padding:14px; background:#ff7a2f; color:#fff; border:none; border-radius:10px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer;">Send Message</button>
+      </div>
+    </form>
+    <p id="contact-success" style="display:none; color:#4ade80; font-size:0.9rem; margin-top:16px; text-align:center;">✓ Message sent! We'll get back to you soon.</p>
+  </div>
+</div>
+
 <!-- FOOTER -->
 <footer>
   <div class="footer-left">
     <span class="footer-brand">DAWganize</span>
     <span class="footer-copy">© 2026 Suresh Raja Musicals LLC · <a href="https://sureshrajaiyer.com" class="footer-link">sureshrajaiyer.com</a></span>
   </div>
-  <a href="#waitlist" class="footer-link">Contact</a>
+  <a href="#" class="footer-link" id="contact-link">Contact</a>
 </footer>
 
 <script>
@@ -774,6 +799,44 @@
       this.classList.add('active');
       document.getElementById(this.dataset.tab).classList.add('active');
     });
+  });
+
+  // Contact modal
+  const contactModal = document.getElementById('contact-modal');
+  document.getElementById('contact-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    contactModal.style.display = 'flex';
+  });
+  document.getElementById('contact-close').addEventListener('click', function() {
+    contactModal.style.display = 'none';
+  });
+  contactModal.addEventListener('click', function(e) {
+    if (e.target === contactModal) contactModal.style.display = 'none';
+  });
+  document.getElementById('contact-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('contact-btn');
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+    const data = Object.fromEntries(new FormData(this));
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      if (result.success) {
+        document.getElementById('contact-form').style.display = 'none';
+        document.getElementById('contact-success').style.display = 'block';
+      } else {
+        btn.textContent = 'Send Message';
+        btn.disabled = false;
+      }
+    } catch(err) {
+      btn.textContent = 'Send Message';
+      btn.disabled = false;
+    }
   });
 
   // Waitlist form
